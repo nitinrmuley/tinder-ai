@@ -2,6 +2,7 @@ package io.nitinpoc.tinder_ai_backend.conversations;
 
 import io.nitinpoc.tinder_ai_backend.profiles.ProfileRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,8 @@ public class ConversationController {
 
     @PostMapping("/conversations")
     public Conversation createNewConversation(@RequestBody createConversationRequest request){
-        profileRepository.findById(request.profileId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        profileRepository.findById(request.profileId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "unable to find profile id "+request.profileId()));
         Conversation conversation = new Conversation(
                 UUID.randomUUID().toString(),
                 request.profileId(),
@@ -32,6 +34,19 @@ public class ConversationController {
         conversationRepository.save(conversation);
         return conversation;
     }
+    @PostMapping("/conversations/{conversationId}")
+    public Conversation addMessageToCoversation(@PathVariable String conversationId , @RequestBody ChatMessage chatMessage){
+     Conversation conversation=conversationRepository.findById(conversationId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"unable to find conversation with ID"+ conversationId));
+     profileRepository.findById(chatMessage.authorId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"unable to find author ID"+chatMessage.authorId()));
+     //TODO validate author of message
+     ChatMessage messageWithTime = new ChatMessage(chatMessage.messageText(), chatMessage.authorId(), LocalDateTime.now());
+
+     conversation.messages().add(messageWithTime);
+     conversationRepository.save(conversation);
+     return conversation;
+    }
+
+
 
     public record  createConversationRequest(
             String profileId
