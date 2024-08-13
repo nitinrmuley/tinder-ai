@@ -6,6 +6,9 @@ import io.nitinpoc.tinder_ai_backend.conversations.ConversationRepository;
 import io.nitinpoc.tinder_ai_backend.profiles.Gender;
 import io.nitinpoc.tinder_ai_backend.profiles.Profile;
 import io.nitinpoc.tinder_ai_backend.profiles.ProfileRepository;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -23,6 +26,9 @@ public class TinderAiBackendApplication implements CommandLineRunner {
 	@Autowired
 	private ConversationRepository conversationRepository;
 
+	@Autowired
+	private OpenAiChatModel  chatClient;
+
 	public static void main(String[] args) {
 		SpringApplication.run(TinderAiBackendApplication.class, args);
 	}
@@ -30,6 +36,9 @@ public class TinderAiBackendApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		Prompt prompt= new Prompt("who is Google founder");
+		 ChatResponse response = chatClient.call(prompt);
+		System.out.println(response.getResult().getOutput().getContent());
 		//clean all data from DB
 		profileRepository.deleteAll();
 		conversationRepository.deleteAll();
